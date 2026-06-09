@@ -135,6 +135,17 @@ with st.sidebar:
     
     stepper_html += '</div>'
     st.markdown(clean_html(stepper_html), unsafe_allow_html=True)
+    
+    # Bottom Left Sidebar Credits
+    st.markdown(
+        clean_html("""
+        <div class="sidebar-footer">
+            Built by <strong>Sunny Patel</strong><br>
+            <span class="role">Senior Data Analyst</span>
+        </div>
+        """),
+        unsafe_allow_html=True
+    )
 
 # Clean and Dynamic CSS utilizing Streamlit native theme variables
 custom_css = """
@@ -179,6 +190,23 @@ custom_css = """
         display: flex;
         align-items: center;
         gap: 8px;
+    }
+
+    .sidebar-footer {
+        margin-top: 40px;
+        padding-top: 15px;
+        border-top: 1px solid rgba(128, 128, 128, 0.15);
+        font-size: 0.82rem;
+        opacity: 0.7;
+        font-weight: 500;
+        line-height: 1.4;
+    }
+    .sidebar-footer .role {
+        font-size: 0.72rem;
+        opacity: 0.8;
+        font-weight: 400;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
     }
 
     .chat-container {
