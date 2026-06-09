@@ -1,0 +1,26 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Virtual Environments
+.venv/
+venv/
+env/
+ENV/
+
+# Secrets and Local Environment Configuration
+.env
+.env.local
+.env.*.local
+
+# IDE/Editor configurations
+.vscode/
+.idea/
+
+# Streamlit configuration overrides (optional)
+.streamlit/config.toml
