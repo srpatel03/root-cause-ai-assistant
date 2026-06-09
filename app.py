@@ -691,7 +691,7 @@ if st.session_state.current_page == "chat":
         clean_html("""
         <div class="app-title-container">
             <h1 class="app-title">⚙️ Root Cause AI Assistant</h1>
-            <div class="app-subtitle">Interactive Sentinel Event review and clinical process safety co-pilot</div>
+            <div class="app-subtitle">A blame-free workspace to guide you through Sentinel Event reviews and clinical process investigations using 5 Whys analysis. <br><i>To start, describe your safety event or operational failure in the input box below and click Submit Response.</i></div>
         </div>
         """),
         unsafe_allow_html=True
