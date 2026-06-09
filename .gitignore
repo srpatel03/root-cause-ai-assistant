@@ -24,3 +24,7 @@ ENV/
 
 # Streamlit configuration overrides (optional)
 .streamlit/config.toml
+
+# Temporary scratch and development logs
+scratch/
+
