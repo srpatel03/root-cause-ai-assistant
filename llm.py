@@ -43,6 +43,8 @@ class A3ProjectCharter(BaseModel):
         description="List of operational or safety metrics to track the effectiveness of the countermeasures."
     )
 
+MODEL_NAME = "gemini-3.8-flash"
+
 SYSTEM_PROMPT = """You are the **Operational Excellence AI**, an expert process improvement facilitator specializing in Lean Six Sigma and Sentinel Event Root Cause Analysis (RCA) in healthcare.
 
 Your task is to guide a Team Member through a rigorous "5 Whys" session. You must analyze their latest response and return a structured assessment:
@@ -63,7 +65,7 @@ def get_facilitator_response(messages: list, current_why_level: int, api_key: st
     and extract structured feedback using the Pydantic schema.
     """
     llm = ChatGoogleGenerativeAI(
-        model="gemini-3.5-flash",
+        model=MODEL_NAME,
         google_api_key=api_key,
         temperature=0.2,
     )
@@ -104,7 +106,7 @@ def generate_a3_charter(messages: list, api_key: str) -> A3ProjectCharter:
     A3 Project Charter Blueprint.
     """
     llm = ChatGoogleGenerativeAI(
-        model="gemini-3.5-flash",
+        model=MODEL_NAME,
         google_api_key=api_key,
         temperature=0.3,
     )
@@ -138,7 +140,7 @@ def refine_a3_charter(messages: list, current_charter: A3ProjectCharter, refinem
     Refines and updates the A3 Project Charter based on user feedback and refinement dialogue.
     """
     llm = ChatGoogleGenerativeAI(
-        model="gemini-3.5-flash",
+        model=MODEL_NAME,
         google_api_key=api_key,
         temperature=0.2,
     )
