@@ -54,8 +54,13 @@ if "current_page" not in st.session_state:
 if "refinement_messages" not in st.session_state:
     st.session_state.refinement_messages = []
 
-# Retrieve API Key from Environment
+# Retrieve API Key from Environment or Streamlit secrets
 api_key = os.environ.get("GOOGLE_API_KEY")
+if not api_key:
+    try:
+        api_key = st.secrets.get("GOOGLE_API_KEY")
+    except Exception:
+        pass
 
 # Sidebar Layout (collapsible, displaying vertical progress stepper)
 with st.sidebar:
@@ -110,7 +115,7 @@ with st.sidebar:
         """
         
     # Step 7: A3 Project Charter
-    if st.session_state.charter_generated:
+    if st.session_state.charter_generated and st.session_state.charter_data:
         s7_status = "completed"
         s7_icon = "✓"
         s7_subtitle = "Project Charter compiled!"
@@ -770,7 +775,7 @@ if st.session_state.current_page == "chat":
                 )
                 
                 # Render form buttons side-by-side if the session is concluded
-                if st.session_state.session_concluded and not st.session_state.charter_generated:
+                if st.session_state.session_concluded and (not st.session_state.charter_generated or not st.session_state.charter_data):
                     c_submit, c_dig, c_res = st.columns([3, 4, 3])
                     with c_submit:
                         submit_button = st.form_submit_button("Submit Response", type="primary", disabled=True, use_container_width=True)
@@ -1002,30 +1007,44 @@ else:
         st.markdown("<div style='height: 30px;'></div>", unsafe_allow_html=True)
 
         # Action panel to generate Project Charter
-        if not st.session_state.charter_generated:
+        if not st.session_state.charter_generated or not st.session_state.charter_data:
             st.markdown("<h3 style='text-align: center; color: #990000;'>📋 Ready to generate the Project Charter?</h3>", unsafe_allow_html=True)
             st.markdown("<p style='text-align: center; opacity: 0.8; margin-bottom: 1.5rem;'>The AI will analyze the validated root cause path and draft a full A3 charter blueprint.</p>", unsafe_allow_html=True)
             
             cb1, cb2, cb3 = st.columns([3, 6, 3])
             with cb2:
                 if st.button("📝 Generate A3 Project Charter Blueprint", type="primary", use_container_width=True, key="generate_charter_summary"):
-                    st.session_state.charter_generated = True
                     st.toast("Compiling A3 Project Charter Blueprint...", icon="📝")
                     with st.spinner("Compiling A3 Project Charter..."):
                         try:
                             charter = generate_a3_charter(st.session_state.messages, api_key)
-                            st.session_state.charter_data = charter
+                            if charter:
+                                st.session_state.charter_data = charter
+                                st.session_state.charter_generated = True
+                                st.rerun()
+                            else:
+                                st.session_state.charter_generated = False
+                                st.session_state.charter_data = None
+                                st.error("Failed to compile charter: The model returned an empty response. Please try clicking the button again.")
                         except Exception as e:
+                            st.session_state.charter_generated = False
+                            st.session_state.charter_data = None
                             st.error(f"Error compiling charter: {str(e)}")
-                    st.rerun()
         
         # Display A3 Project Charter in a 2x2 Grid
         if st.session_state.charter_generated and st.session_state.charter_data:
             charter = st.session_state.charter_data
             
             st.markdown("---")
-            st.markdown("<h2 style='text-align: center; color: #990000;'>📋 A3 Project Charter Blueprint</h2>", unsafe_allow_html=True)
-            st.markdown("<p style='text-align: center; opacity: 0.8; margin-bottom: 2rem;'>Formal Lean Action Plan designed to address systemic root causes</p>", unsafe_allow_html=True)
+            c_title, c_regen = st.columns([8, 2])
+            with c_title:
+                st.markdown("<h2 style='color: #990000; margin: 0;'>📋 A3 Project Charter Blueprint</h2>", unsafe_allow_html=True)
+                st.markdown("<p style='opacity: 0.8; margin-bottom: 2rem;'>Formal Lean Action Plan designed to address systemic root causes</p>", unsafe_allow_html=True)
+            with c_regen:
+                if st.button("🔄 Regenerate", use_container_width=True, key="regen_charter_btn"):
+                    st.session_state.charter_generated = False
+                    st.session_state.charter_data = None
+                    st.rerun()
             
             countermeasures_html = "".join([f"<li>{item}</li>" for item in charter.countermeasures])
             metrics_html = "".join([f"<li>{item}</li>" for item in charter.success_metrics])
@@ -1090,9 +1109,9 @@ else:
                             "role": "assistant",
                             "content": refinement_res.explanation
                         })
+                        st.rerun()
                     except Exception as e:
                         st.error(f"Error refining charter: {str(e)}")
-                st.rerun()
                 
             if st.session_state.refinement_messages:
                 st.markdown(clean_html("""

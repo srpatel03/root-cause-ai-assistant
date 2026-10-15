@@ -17,7 +17,7 @@ class FacilitatorResponse(BaseModel):
         description="Required if is_vague is True. A request for specific details, timeline, or system sequence to clarify the generic response."
     )
     next_why_question: str = Field(
-        description="The next specific 'Why' question to advance the root-cause analysis. If the session concludes (is_concluded is True), this field must instead contain a final conclusion statement summarizing the session and guiding the user to click 'Generate Project Charter / A3 Draft'."
+        description="The next specific 'Why' question to advance the root-cause analysis. If the session concludes (is_concluded is True), this field must instead contain a final conclusion statement summarizing the session and guiding the user to proceed to the Session Summary to generate their A3 Project Charter Blueprint."
     )
     why_level: int = Field(
         description="The current validated Why level (1 to 5). Keep it the same as the previous level if is_critique or is_vague is True. Otherwise, increment by 1."
@@ -124,6 +124,11 @@ def generate_a3_charter(messages: list, api_key: str) -> A3ProjectCharter:
         else:
             formatted_messages.append(AIMessage(content=msg["content"]))
             
+    # Ensure the conversation ends with a user turn as required by the Google Gemini API
+    formatted_messages.append(
+        HumanMessage(content="Please synthesize the entire 5 Whys root cause analysis above and generate the complete, structured A3 Project Charter Blueprint.")
+    )
+            
     response = structured_llm.invoke(formatted_messages)
     return response
 
@@ -172,6 +177,12 @@ def refine_a3_charter(messages: list, current_charter: A3ProjectCharter, refinem
             formatted_messages.append(HumanMessage(content=msg["content"]))
         else:
             formatted_messages.append(AIMessage(content=msg["content"]))
+            
+    # Ensure the conversation ends with a user turn as required by the Google Gemini API
+    if not formatted_messages or not isinstance(formatted_messages[-1], HumanMessage):
+        formatted_messages.append(
+            HumanMessage(content="Please review the requested changes and output the updated A3 Project Charter.")
+        )
             
     response = structured_llm.invoke(formatted_messages)
     return response
